@@ -1,5 +1,6 @@
 ﻿
 using Domain.Common;
+using Microsoft.AspNetCore.Identity;
 
 namespace Domain.Entities
 {
@@ -23,6 +24,8 @@ namespace Domain.Entities
         public string Email { get; set; }
         public int MobileNumber { get; set; }
         public DateTimeOffset DateOfBirth { get; set; }
+        public IdentityUser AccountUser { get; set; }
+
         public bool IsActive { get; set; }
         private readonly IList<Book> book;
         public IEnumerable<Book> Books

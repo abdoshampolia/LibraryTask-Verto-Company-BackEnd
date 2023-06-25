@@ -12,15 +12,17 @@ namespace Apis.Controllers.AccountApi
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class LoginController : ControllerBase
+    public class AccountController : ControllerBase
     {
         private readonly IConfiguration _configuration;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public LoginController(IConfiguration configuration, SignInManager<IdentityUser> signInManager)
+        public AccountController(IConfiguration configuration, SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager)
         {
             _configuration = configuration;
             _signInManager = signInManager;
+            _userManager = userManager;
         }
 
         [HttpPost]
@@ -52,12 +54,46 @@ namespace Apis.Controllers.AccountApi
                     expiration = token.ValidTo
                 });
             }
-
             return Unauthorized();
         }
 
+   
+
+        [HttpPost]
+        [Route("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterDto registerUser)
+        {
+            var userExists = await _userManager.FindByNameAsync(registerUser.Username);
+            if (userExists != null)
+            {
+                return BadRequest("Username already exists");
+            }
+
+            var emailExists = await _userManager.FindByEmailAsync(registerUser.Email);
+            if (emailExists != null)
+            {
+                return BadRequest("Email already exists");
+            }
+
+            var user = new IdentityUser
+            {
+                UserName = registerUser.Username,
+                Email = registerUser.Email,
+                PhoneNumber = registerUser.PhoneNumber,
+            };
+
+            var result = await _userManager.CreateAsync(user, registerUser.Password);
+            if (result.Succeeded)
+            {
+                await _signInManager.SignInAsync(user, false);
+                return Ok();
+            }
+            return BadRequest(result.Errors);
+        }
+
+        [HttpPost]
         [Authorize]
-        [HttpPost(Name = "Logout")]
+        [Route("logout")]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();

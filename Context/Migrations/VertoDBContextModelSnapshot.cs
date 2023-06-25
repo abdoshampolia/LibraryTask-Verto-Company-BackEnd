@@ -96,6 +96,9 @@ namespace Context.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("AccountUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("Address")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -142,6 +145,8 @@ namespace Context.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountUserId");
 
                     b.ToTable("Students");
                 });
@@ -357,6 +362,15 @@ namespace Context.Migrations
                         .HasForeignKey("StudentsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Entities.Student", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "AccountUser")
+                        .WithMany()
+                        .HasForeignKey("AccountUserId");
+
+                    b.Navigation("AccountUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
